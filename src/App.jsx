@@ -13,7 +13,7 @@ import ManageEventPage from "./pages/manage-events-page";
 import ManageCouponPage from "./pages/manage-coupon-page";
 import ManageSchedulePage from "./pages/manage-schedule-page";
 import SettingPage from "./pages/setting-page";
-import { DashboardPage } from "./pages";
+// import { DashboardPage } from "./pages";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -26,10 +26,10 @@ function App() {
     {
       element: <Layout />,
       children: [
-        {
-          path: "/dashboard",
-          element: isLoggedIn ? <DashboardPage /> : <Navigate to="/" />,
-        },
+        // {
+        //   path: "/dashboard",
+        //   element: isLoggedIn ? <DashboardPage /> : <Navigate to="/" />,
+        // },
         {
           path: "/dashboard",
           element: isLoggedIn ? <ManageFishPage /> : <Navigate to="/" />,
