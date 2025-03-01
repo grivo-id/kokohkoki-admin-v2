@@ -1,5 +1,9 @@
 import { LoginPage } from "./pages";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import "./App.css";
 import Layout from "./components/layout/layout";
 import { useAuth } from "./context/use-context";
@@ -9,6 +13,7 @@ import ManageEventPage from "./pages/manage-events-page";
 import ManageCouponPage from "./pages/manage-coupon-page";
 import ManageSchedulePage from "./pages/manage-schedule-page";
 import SettingPage from "./pages/setting-page";
+import { DashboardPage } from "./pages";
 
 function App() {
   const { isLoggedIn } = useAuth();
