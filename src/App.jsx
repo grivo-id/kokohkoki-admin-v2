@@ -21,10 +21,10 @@ function App() {
     {
       element: <Layout />,
       children: [
-        // {
-        //   path: "/dashboard",
-        //   element: isLoggedIn ? <DashboardPage /> : <Navigate to="/" />,
-        // },
+        {
+          path: "/dashboard",
+          element: isLoggedIn ? <DashboardPage /> : <Navigate to="/" />,
+        },
         {
           path: "/dashboard",
           element: isLoggedIn ? <ManageFishPage /> : <Navigate to="/" />,
