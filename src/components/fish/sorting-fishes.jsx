@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 
-export default function SortFishes({ value, onChange }) {
+export default function SortFishes({ value = 15, onChange }) {
   return (
     <div className="flex gap-1 items-center text-gray-600">
       <label htmlFor="itemsPerPage">Show:</label>

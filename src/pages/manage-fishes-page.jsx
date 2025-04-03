@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllFishes } from "../api/fish-api";
 import ContentWrapper from "../components/UI/content-wrapper";
 import FishItem from "../components/fish/fish-item";
@@ -13,17 +13,17 @@ export default function ManageFishPage() {
   const [fishes, setFishes] = useState([]);
   const [types, setTypes] = useState([]);
   const [eventList, setEventList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    fishes: false,
+    types: false,
+    events: false,
+  });
   const [isOpen, setIsOpen] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const [searchQuery, setSearchQuery] = useState("");
 
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
@@ -35,82 +35,116 @@ export default function ManageFishPage() {
     setCurrentPage(1);
   };
 
-  const filteredFishes = fishes.filter((fish) => fish.name.toLowerCase().includes(searchQuery) || fish.type.toLowerCase().includes(searchQuery));
-  const totalPages = Math.ceil(filteredFishes.length / itemsPerPage);
-  const currentFishes = filteredFishes.slice(indexOfFirstItem, indexOfLastItem);
-
-  const fetchFishes = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getAllFishes();
-      const typeList = await getAllTypes();
-      const eventList = await getAllEvents();
-      
-      setFishes(data.data.reverse());
-      setTypes(typeList.data);
-      setEventList(eventList.data);
-    } catch (error) {
-      console.error("Failed to fetch fishes or types:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchTypes = useCallback(async () => {
-    setLoading(true);
-    try {
-      const typeList = await getAllTypes();
-      setTypes(typeList.data);
-    } catch (error) {
-      console.error("Failed to fetch fishes or types:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    try {
-      const eventList = await getAllEvents();
-      setEventList(eventList.data);
-    } catch (error) {
-      console.error("Failed to fetch fishes or types:", error);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const fetchFishes = async () => {
+      setLoading((prev) => ({ ...prev, fishes: true }));
+      try {
+        const data = await getAllFishes();
+        setFishes(data.data);
+      } catch (error) {
+        console.error("Failed to fetch fishes:", error);
+      } finally {
+        setLoading((prev) => ({ ...prev, fishes: false }));
+      }
+    };
+    fetchFishes();
   }, []);
 
   useEffect(() => {
-    fetchFishes();
-    fetchTypes()
-    fetchEvents()
-  }, [fetchEvents, fetchFishes, fetchTypes]);
+    const fetchTypes = async () => {
+      setLoading((prev) => ({ ...prev, types: true }));
+      try {
+        const typeList = await getAllTypes();
+        setTypes(typeList.data);
+      } catch (error) {
+        console.error("Failed to fetch types:", error);
+      } finally {
+        setLoading((prev) => ({ ...prev, types: false }));
+      }
+    };
+    fetchTypes();
+  }, []);
 
-  const reFetchFishes = () => {
-    fetchFishes();
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading((prev) => ({ ...prev, events: true }));
+      try {
+        const eventList = await getAllEvents();
+        setEventList(eventList.data);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading((prev) => ({ ...prev, events: false }));
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  const reFetchFishes = async () => {
+    setLoading((prev) => ({ ...prev, fishes: true }));
+    try {
+      const data = await getAllFishes();
+      setFishes(data.data);
+    } catch (error) {
+      console.error("Failed to re-fetch fishes:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, fishes: false }));
+    }
   };
+
+  const filteredFishes = fishes.filter(
+    (fish) =>
+      fish.name.toLowerCase().includes(searchQuery) ||
+      fish.type.toLowerCase().includes(searchQuery)
+  );
+  const totalPages = Math.ceil(filteredFishes.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentFishes = filteredFishes.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <>
       <section id="fish-section" className="section-wrapper">
         <h1 className="text-rose-500 text-2xl font-bold mb-6">Manage Fishes</h1>
         <div className="flex flex-wrap justify-between items-center mb-3">
-          <button className="bg-rose-500 text-white px-3 py-2.5 rounded-md" onClick={() => setIsOpen(true)}>
+          <button
+            className="bg-rose-500 text-white px-3 py-2.5 rounded-md"
+            onClick={() => setIsOpen(true)}
+          >
             Add Fish
           </button>
           <SearchFish onSearch={handleSearch} />
         </div>
         <div className="flex flex-wrap justify-between items-center">
-          <FishPagination totalPages={totalPages} paginate={paginate} currentPage={currentPage} />
-          <SortFishes value={itemsPerPage} onChange={handleItemsPerPageChange} />
+          <FishPagination
+            totalPages={totalPages}
+            paginate={paginate}
+            currentPage={currentPage}
+          />
+          <SortFishes
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+          />
         </div>
-        <ContentWrapper loading={loading}>
+        <ContentWrapper loading={loading.fishes}>
           {currentFishes.map((fish) => (
-            <FishItem key={fish.id} {...fish} reFetchFishes={reFetchFishes} typesData={types} eventList={eventList} />
+            <FishItem
+              key={fish.id}
+              {...fish}
+              reFetchFishes={reFetchFishes}
+              typesData={types}
+              eventList={eventList}
+            />
           ))}
         </ContentWrapper>
       </section>
-      <AddFish isOpen={isOpen} setIsOpen={setIsOpen} types={types} onAdd={reFetchFishes} eventList={eventList} />
+      <AddFish
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        types={types}
+        onAdd={reFetchFishes}
+        eventList={eventList}
+      />
     </>
   );
 }
