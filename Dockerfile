@@ -7,6 +7,12 @@ WORKDIR /usr/src
 # Copy the current directory contents into the Docker container
 COPY . .
 
+# Install dependencies
+RUN npm install
+
+# Build the app
+RUN npm run build
+
 # Stage 2: Serve the app with NGINX
 FROM nginx:alpine
 
