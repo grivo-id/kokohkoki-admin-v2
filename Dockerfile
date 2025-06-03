@@ -1,14 +1,16 @@
-# Use the official Node.js 14 image as the base image
-FROM node:14 as builder
+# Use the official Node.js 18 image as the base image
+FROM node:18 as builder
 
 # Set the working directory in the Docker container
 WORKDIR /usr/src
 
-# Copy the current directory contents into the Docker container
-COPY . .
+# Copy the package files separately for better caching
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
+
+COPY . .
 
 # Build the app
 RUN npm run build
