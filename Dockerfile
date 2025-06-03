@@ -1,5 +1,5 @@
 # Use the official Node.js 18 image as the base image
-FROM node:18 as builder
+FROM node:18
 
 # Set the working directory in the Docker container
 WORKDIR /usr/src
@@ -10,19 +10,15 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
 # Build the app
 RUN npm run build
 
-# Stage 2: Serve the app with NGINX
-FROM nginx:alpine
+# Install serve globally
+RUN npm install -g serve
 
-# Copy the build output to replace the default NGINX content.
-COPY --from=builder /usr/src/dist /usr/share/nginx/html
+EXPOSE 8888
 
-# Expose port for the app
-EXPOSE 3002
-
-# Start Nginx and keep it running
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "dist", "-l", "8888"]
