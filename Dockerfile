@@ -1,13 +1,28 @@
-FROM node:18-alpine AS build
-WORKDIR /app
-COPY package.json package-lock.json ./
+# Use the official Node.js 18 image as the base image
+FROM node:18 as builder
+
+# Set the working directory in the Docker container
+WORKDIR /usr/src
+
+# Copy the package files separately for better caching
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
+
 COPY . .
+
+# Build the app
 RUN npm run build
 
-FROM node:18-alpine AS production
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=build /app/build /app/build
-EXPOSE 8888
-CMD ["serve", "-s", "/app/build", "-l", "8888"]
+# Stage 2: Serve the app with NGINX
+FROM nginx:alpine
+
+# Copy the build output to replace the default NGINX content.
+COPY --from=builder /usr/src/dist /usr/share/nginx/html
+
+# Expose port for the app
+EXPOSE 3002
+
+# Start Nginx and keep it running
+CMD ["nginx", "-g", "daemon off;"]
